@@ -6,13 +6,13 @@ IFS=$'\n\t'
 # Sabnzbd RSS Filters:
 # 0 : Requires : MWR
 # 1 : Reject : re: proper|notebook|multi
-# 2 : Requires : re: F1TV|SKY
+# 2 : Requires : re: F1TV|F1LIVE
 # 3 : Requires : re: re: FP1|FP2|FP3|Sprint|Qualifying|Race|Pre|Post|Warm-Up|Conference|Morning|Afternoon|Post-Testing|Round00|Wrap-Up
-# 4 : Reject : re: 720p|2160p
+# 4 : Reject : re: 720p|2160p|SKY
 # 5 : Accept : *
 
-# Set preferred feed to SKY or F1LIVE
-PREFERRED_FEED="F1LIVE"
+# Set preferred feed SKY or F1TV
+PREFERRED_FEED="F1TV"
 
 # Set destination dir where to place processed files.
 # Must be accessible from Sabnzbd container if running in docker
@@ -51,13 +51,14 @@ EPISODE_ARRAY["Post-Race.Press.Conference"]="15"
 
 # Check if filename contains the episodes array assigned
 FOUND=0
-for KEY in "${!EPISODE_ARRAY[@]}"; do
+EPISODE_KEYS=$(printf '%s\n' "${!EPISODE_ARRAY[@]}" | awk '{print length, $0}' | sort -nr | cut -d' ' -f2-)
+for KEY in ${EPISODE_KEYS}; do
   PATTERN="${KEY//./[ .-]}"
   if echo "${NEW_FILENAME}" | grep -qEio "${PATTERN}"; then
     FOUND=1
     printf 'Matched episode key: %s -> E%s\n' "${KEY}" "${EPISODE_ARRAY["${KEY}"]}"
     break
- fi
+  fi
 done
 
 # Filename does not contain wanted episode name, stop and delete files
